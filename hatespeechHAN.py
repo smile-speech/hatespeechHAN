@@ -59,7 +59,7 @@ parser.add_argument('--max_sen_len', type=int, default=20, help='MAX_SENTENCE_LE
 # add_argument 함수를 실행하면 parser 객체 내부에 해당이름을 가지는 멤버변수가 생성된다. 
 # parse_arg()를 통해 프로그램 실행시 argument를 입력 받는다.
 # 주의 .py 형식의 파일에만 작동한다.
-args = parser.parse_args('/root/corona/hatespeech/Data/data_waseem_3.csv')
+args = parser.parse_args()
 
 # print( args.max_sen)
 MAX_SENTENCES = args.max_sen
@@ -625,7 +625,7 @@ def sentiment_analysis(review):
         heatmap = sns.heatmap(pred_att, xticklabels=False, yticklabels=False,cbar=False, square=True,annot=word_list ,fmt ='', annot_kws={"alpha":1,'rotation':15},cmap ="coolwarm_r", linewidths=0.2, center=0, vmin=0, vmax=1)
         plt.xticks(rotation=45)
         plt.show()
-        plt.savefig(image_path+'/attention_img_sentence'+sent_idx+'_word'+word_idx+'.png')
+        # plt.savefig(image_path+'/attention_img_sentence'+sent_idx+'_word'+word_idx+'.png')
 
 
 text =  "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
