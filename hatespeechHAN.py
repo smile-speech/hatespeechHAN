@@ -47,18 +47,10 @@ from sklearn.metrics import confusion_matrix, classification_report
 import seaborn as sns
 
 image_path = '/root/corona/hatespeechHAN/images/'
-# MAX_SENTENCES = 8
-# MAX_SENTENCE_LENGTH = 20
 
-#argparse
 parser = argparse.ArgumentParser()
-# 가져올 argument들을 정의
-# add_argument()를 통해 argument의 이름, 타입, 기본 값을 정의하고 도움말을 작성할 수 있다.
 parser.add_argument('--max_sen', type=int, default=8, help='MAX_SENTENCES')
 parser.add_argument('--max_sen_len', type=int, default=20, help='MAX_SENTENCE_LENGTH')
-# add_argument 함수를 실행하면 parser 객체 내부에 해당이름을 가지는 멤버변수가 생성된다. 
-# parse_arg()를 통해 프로그램 실행시 argument를 입력 받는다.
-# 주의 .py 형식의 파일에만 작동한다.
 args = parser.parse_args()
 
 # print( args.max_sen)
