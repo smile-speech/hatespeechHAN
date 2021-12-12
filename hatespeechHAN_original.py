@@ -270,9 +270,6 @@ def WeightedSum(attentions, representations):
     
 
 
-# # In[23]:
-
-
 def HieAtt(embedding_matrix,
            max_sentences,
            max_sentence_length,
