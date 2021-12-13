@@ -48,16 +48,6 @@ experimental_run_tf_function=False
 
 image_path = '/root/corona/hatespeechHAN/images/'
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--max_sen', type=int, default=8, help='MAX_SENTENCES')
-parser.add_argument('--max_sen_len', type=int, default=20, help='MAX_SENTENCE_LENGTH')
-args = parser.parse_args()
-
-# print( args.max_sen)
-MAX_SENTENCES = args.max_sen
-MAX_SENTENCE_LENGTH = args.max_sen_len
-
-
 class AttentionLayer(Layer):
     def __init__(self, attention_dim, **kwargs):
         self.attention_dim = attention_dim
@@ -94,15 +84,21 @@ class AttentionLayer(Layer):
 
 class Hierarchical_attention_networks():
     
-
-    def __init__(self, tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data):
+    def __init__(self, MAX_SENTENCES,MAX_SENTENCE_LENGTH, tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data,test_Y_data):
+        self.MAX_SENTENCES = MAX_SENTENCES
+        self.MAX_SENTENCE_LENGTH = MAX_SENTENCE_LENGTH
         self.tokenizer = tokenizer
         self.embedding_dim = embedding_dim
         self.max_nb_words = max_nb_words
+        self.test_x_data = test_x_data
+        self.test_y_data = test_y_data
+
         self.train_X_data = train_X_data
         self.train_Y_data = train_Y_data
         self.val_X_data = val_X_data
         self.val_Y_data = val_Y_data
+        self.test_X_data = test_X_data
+        self.test_Y_data = test_Y_data
 
 
     def load_word2vec(self):
@@ -159,8 +155,8 @@ class Hierarchical_attention_networks():
             dense_dropout=0.2,
             optimizer = keras.optimizers.Adagrad(lr=0.01, epsilon=1e-6)):
 
-        max_sentence_length = MAX_SENTENCE_LENGTH
-        max_sentences = MAX_SENTENCES
+        # max_sentence_length = self.MAX_SENTENCE_LENGTH
+        # max_sentences = self.MAX_SENTENCES
         # embedding_matrix = (max_nb_words + 1, embedding_dim)
         #추가
         self.embedding_matrix = self.load_embedding('word2vec')
@@ -168,11 +164,11 @@ class Hierarchical_attention_networks():
         embedding_layer = Embedding(max_nb_words + 1, 
                                     embedding_dim,
                                     weights=[self.embedding_matrix],
-                                    input_length=max_sentence_length,
+                                    input_length=self.MAX_SENTENCE_LENGTH,
                                     trainable=False)
 
         # first, build a sentence encoder
-        sentence_input = Input(shape=(max_sentence_length, ), dtype='int32')
+        sentence_input = Input(shape=(self.MAX_SENTENCE_LENGTH, ), dtype='int32')
         embedded_sentence = embedding_layer(sentence_input)
         embedded_sentence = Dropout(dense_dropout)(embedded_sentence)
         contextualized_sentence = Bidirectional(GRU(rnn_dim, return_sequences=True))(embedded_sentence)
@@ -185,7 +181,7 @@ class Hierarchical_attention_networks():
                                 outputs=[sentence_representation])
 
         # then, build a document encoder
-        document_input = Input(shape=(max_sentences, max_sentence_length), dtype='int32')
+        document_input = Input(shape=(self.MAX_SENTENCES, self.MAX_SENTENCE_LENGTH), dtype='int32')
         embedded_document = TimeDistributed(sentence_encoder)(document_input)
         contextualized_document = Bidirectional(GRU(rnn_dim, return_sequences=True))(embedded_document)
         
@@ -205,21 +201,21 @@ class Hierarchical_attention_networks():
         
         pred_sentiment = fc_layers(document_representation)
 
-        model = Model(inputs=[document_input],
+        self.model = Model(inputs=[document_input],
                     outputs=[pred_sentiment])
         
         ############### build attention extractor ###############
         word_attention_extractor = Model(inputs=[sentence_input],
                                         outputs=[word_attention])
         word_attentions = TimeDistributed(word_attention_extractor)(document_input)
-        attention_extractor = Model(inputs=[document_input],
+        self.attention_extractor = Model(inputs=[document_input],
                                         outputs=[word_attentions, sentence_attention])
         
-        model.compile(loss=['categorical_crossentropy'],
+        self.model.compile(loss=['categorical_crossentropy'],
                 optimizer=optimizer,
                 metrics=['accuracy'])
         
-        return model, attention_extractor
+        return self.model, self.attention_extractor
 
 
     def training(self):
@@ -227,16 +223,16 @@ class Hierarchical_attention_networks():
         save_folder = os.path.join("/root/corona/hatespeechHAN/models")
         if not os.path.isdir(save_folder):
             os.mkdir(save_folder)
-        model_path = os.path.join(save_folder, "modell.h5")
+        self.model_path = os.path.join(save_folder, "modell.h5")
 
-        checkpointer = ModelCheckpoint(filepath=model_path,
+        checkpointer = ModelCheckpoint(filepath=self.model_path,
                                        monitor='val_acc',
                                        verbose=True,
                                        save_best_only=True,
                                        mode='max')
 
         # self.embedding_matrix = self.load_embedding('word2vec')#추가
-        model, attention_extractor = self.HAN_layer(
+        self.model, attention_extractor = self.HAN_layer(
                                             nb_classes=3,
                                             embedding_dim=300,
                                             attention_dim=100,
@@ -249,115 +245,124 @@ class Hierarchical_attention_networks():
                                             optimizer = keras.optimizers.Adagrad(lr=0.01, epsilon=1e-6))
 
 
-        history = model.fit(x=[self.train_X_data],
+        self.history = self.model.fit(x=[self.train_X_data],
                             y=[self.train_Y_data],
                             batch_size=64,
-                            epochs=100,
+                            epochs=3,
                             verbose=True,
                             validation_data=(self.val_X_data, self.val_Y_data),
                             callbacks=[checkpointer])
 
-        return history
+        return self.model, self.history
         # print(history.history.keys())
 
 
+
 # # # print(history.history.keys())
+    def evaluation(self):
+        # summarize history for accuracy
+        plt.plot(self.history.history['accuracy'])
+        plt.plot(self.history.history['val_accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        # plt.show()
+        plt.savefig(image_path + "/model_accuracy.png")
 
 
-
-# # summarize history for accuracy
-# plt.plot(history.history['accuracy'])
-# plt.plot(history.history['val_accuracy'])
-# plt.title('model accuracy')
-# plt.ylabel('accuracy')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.show()
-
-
-# # # summarize history for loss
-# plt.plot(history.history['loss'])
-# plt.plot(history.history['val_loss'])
-# plt.title('model loss')
-# plt.ylabel('loss')
-# plt.xlabel('epoch')
-# plt.legend(['train', 'test'], loc='upper left')
-# plt.show()
+        # # summarize history for loss
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        # plt.show()
+        plt.savefig(image_path + "/model_loss.png")
 
 
-# score = model.evaluate(test_X_data, test_Y_data, verbose=0, batch_size=64)
-# # print("Test Accuracy of {}: {}".format(model_path, score[1]))
+        score = self.model.evaluate(self.test_X_data, self.test_Y_data, verbose=0, batch_size=64)
+        print("Test Accuracy of {}: {}".format(self.model_path, score[1]))
 
+        length = len(self.test_x_data)
+        y_true = self.test_y_data
+        y_pred = []
+        y_predict = self.model.predict(self.test_X_data)
 
+        for i in range(length):
+            y_pred.append(argmax(y_predict[i]))
 
-# length = len(test_x_data)
-# y_true = test_y_data
-# y_pred = []
-# y_predict = model.predict(test_X_data)
+        target_names = ['0', '1','2']
+        print(classification_report(y_true, y_pred, target_names=target_names))
 
-# for i in range(length):
-#     y_pred.append(argmax(y_predict[i]))
+        comfmat = pd.DataFrame(confusion_matrix(y_true, y_pred), index=['nohate','sexism','racism'],columns=['nohate','sexism','racism'])
+        print(comfmat)
 
-# target_names = ['0', '1','2']
-# # print(classification_report(y_true, y_pred, target_names=target_names))
+    def doc2hierarchical(self, text):
+        sentences = sent_tokenize(text)
+        # max_sentences = self.MAX_SENTENCES
+        # max_sentence_length = self.MAX_SENTENCE_LENGTH
+        tokenized_sentences = self.tokenizer.texts_to_sequences(sentences)
+        tokenized_sentences = pad_sequences(tokenized_sentences, maxlen=self.MAX_SENTENCE_LENGTH)
 
+        pad_size = self.MAX_SENTENCES - tokenized_sentences.shape[0]
 
-
-# comfmat = pd.DataFrame(confusion_matrix(y_true, y_pred), index=['nohate','sexism','racism'],columns=['nohate','sexism','racism'])
-
-
-
-# word_rev_index={}
-# for word, i in tokenizer.word_index.items():
-#     word_rev_index[i] = word
-
-# def sentiment_analysis(review):        
-#     tokenized_sentences = doc2hierarchical(review)
-    
-#     # word attention만 가져오기
-#     pred_attention = attention_extractor.predict(np.asarray([tokenized_sentences]))[0][0]
-#     sent_attention = attention_extractor.predict(np.asarray([tokenized_sentences]))[1][0]
-#     print(sent_attention)
-#     sent_att_labels=[]
-#     for sent_idx, sentence in enumerate(tokenized_sentences):
-#         if sentence[-1] == 0:
-#             continue
-#         sent_len = sent_idx
-#         sent_att_labels.append("Sentance "+str(sent_idx+1))
-#     sent_att = sent_attention[0:sent_len+1]
-#     sent_att = np.expand_dims(sent_att, axis=0)
-#     sent_att_labels = np.expand_dims(sent_att_labels, axis=0) 
-
-#     for sent_idx, sentence in enumerate(tokenized_sentences):
-#         if sentence[-1] == 0:
-#             continue
+        if pad_size <= 0:  # tokenized_sentences.shape[0] < max_sentences
+            tokenized_sentences = tokenized_sentences[:self.MAX_SENTENCES]
+        else:
+            tokenized_sentences = np.pad(
+                tokenized_sentences, ((0, pad_size), (0, 0)),
+                mode='constant', constant_values=0
+            )
         
-#         for word_idx in range(MAX_SENTENCE_LENGTH):
-#             if sentence[word_idx] != 0:
-#                 words = [word_rev_index[word_id] for word_id in sentence[word_idx:]]
-#                 pred_att = pred_attention[sent_idx][-len(words):]
-#                 pred_att = np.expand_dims(pred_att, axis=0)
-#                 break
+        return tokenized_sentences
 
+    def attention_visualization(self,review):    
+        word_rev_index={}
+        for word, i in self.tokenizer.word_index.items():
+            word_rev_index[i] = word    
+        tokenized_sentences = self.doc2hierarchical(review)
         
-#         fig, ax = plt.subplots(figsize=(1,1))
-#         plt.rc('xtick', labelsize=16)
-#         #cmap="Blues",cmap='YlGnBu"
-#         heatmap = sns.heatmap([[sent_att[0][sent_idx]]], xticklabels=False, yticklabels=False,cbar = False , annot=[[sent_att_labels[0][sent_idx]]],fmt ='', square=True, linewidths=0.1, cmap='coolwarm', center=0, vmin=0, vmax=1)
-#         plt.xticks(rotation=45)
-#         plt.show()
+        # word attention만 가져오기
+        pred_attention = self.attention_extractor.predict(np.asarray([tokenized_sentences]))[0][0]
+        sent_attention = self.attention_extractor.predict(np.asarray([tokenized_sentences]))[1][0]
+        print(sent_attention)
+        sent_att_labels=[]
+        for sent_idx, sentence in enumerate(tokenized_sentences):
+            if sentence[-1] == 0:
+                continue
+            sent_len = sent_idx
+            sent_att_labels.append("Sentance "+str(sent_idx+1))
+        sent_att = sent_attention[0:sent_len+1]
+        sent_att = np.expand_dims(sent_att, axis=0)
+        sent_att_labels = np.expand_dims(sent_att_labels, axis=0) 
 
+        for sent_idx, sentence in enumerate(tokenized_sentences):
+            if sentence[-1] == 0:
+                continue
+            
+            for word_idx in range(self.MAX_SENTENCE_LENGTH):
+                if sentence[word_idx] != 0:
+                    words = [word_rev_index[word_id] for word_id in sentence[word_idx:]]
+                    pred_att = pred_attention[sent_idx][-len(words):]
+                    pred_att = np.expand_dims(pred_att, axis=0)
+                    break
+
+            
+            fig, ax = plt.subplots(figsize=(1,1))
+            plt.rc('xtick', labelsize=16)
+            #cmap="Blues",cmap='YlGnBu"
+            heatmap = sns.heatmap([[sent_att[0][sent_idx]]], xticklabels=False, yticklabels=False,cbar = False , annot=[[sent_att_labels[0][sent_idx]]],fmt ='', square=True, linewidths=0.1, cmap='coolwarm', center=0, vmin=0, vmax=1)
+            plt.xticks(rotation=45)
+            # plt.show()
+
+            fig, ax = plt.subplots(figsize=(len(words), 2))
+            plt.rc('xtick', labelsize=16)
+            pred_att
+            word_list = np.expand_dims(words, axis=0)
+            heatmap = sns.heatmap(pred_att, xticklabels=False, yticklabels=False,cbar=False, square=True,annot=word_list ,fmt ='', annot_kws={"alpha":1,'rotation':15},cmap ="coolwarm_r", linewidths=0.2, center=0, vmin=0, vmax=1)
+            plt.xticks(rotation=45)
+            # plt.show()
         
-        
-#         fig, ax = plt.subplots(figsize=(len(words), 2))
-#         plt.rc('xtick', labelsize=16)
-#         pred_att
-#         word_list = np.expand_dims(words, axis=0)
-#         heatmap = sns.heatmap(pred_att, xticklabels=False, yticklabels=False,cbar=False, square=True,annot=word_list ,fmt ='', annot_kws={"alpha":1,'rotation':15},cmap ="coolwarm_r", linewidths=0.2, center=0, vmin=0, vmax=1)
-#         plt.xticks(rotation=45)
-#         plt.show()
-#         # plt.savefig(image_path+'/attention_img_sentence'+sent_idx+'_word'+word_idx+'.png')
-
-
-# text =  "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
-# sentiment_analysis(text)
+        plt.savefig(image_path + "/test.png")

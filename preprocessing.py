@@ -38,7 +38,6 @@ from keras.callbacks import ModelCheckpoint
 import matplotlib.pyplot as plt
 from numpy import argmax
 from sklearn.metrics import classification_report
-
 from sklearn.metrics import confusion_matrix, classification_report
 
 import seaborn as sns
@@ -137,7 +136,7 @@ class preprocessing():
                                                                       test_size=0.1111, 
                                                                       random_state=42)
 
-        return self.max_nb_words, self.tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data
+        return self.max_nb_words, self.tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, self.test_x_data, self.test_y_data,test_X_data, test_Y_data
 
 
     def doc2hierarchical(self, text):

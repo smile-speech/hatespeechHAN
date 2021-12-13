@@ -28,15 +28,19 @@ if __name__ == '__main__':
     pp = preprocessing(MAX_SENTENCES,MAX_SENTENCE_LENGTH)
     pp.data_read()
     pp.data_split()
-    max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data = pp._tokenizer()
+    max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, test_x_data, test_y_data,test_X_data, test_Y_data= pp._tokenizer()
     # print(tokenizer)
-    han = Hierarchical_attention_networks(tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data)
+    han = Hierarchical_attention_networks(MAX_SENTENCES,MAX_SENTENCE_LENGTH,tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data, test_Y_data)
     # han.load_embedding()
-    print(han.training())
+    han.training()
+
+    han.evaluation()
+    
     
 
-
-    # text =  "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
+    text =  "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
+    han.attention_visualization(text)
+    
     # sentiment_analysis(text)
 
 
