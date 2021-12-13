@@ -1,15 +1,6 @@
-import pandas as pd
-import urllib
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
-import numpy as np
-import random
 import argparse
 from preprocessing import preprocessing
-from hatespeechHAN import Hierarchical_attention_networks, AttentionLayer
+from hatespeechHAN import Hierarchical_attention_networks
 
 if __name__ == '__main__':
 
@@ -18,7 +9,7 @@ if __name__ == '__main__':
     parser.add_argument('--msl', type=int, help='MAX_SENTENCE_LENGTH',default=20, required=False)
     
     parser.add_argument('--em', type=int, help='embedding_dim',default=300, required=False)
-    
+    # parser.add_argument('--')
     args = parser.parse_args()
 
     MAX_SENTENCES = args.ms
@@ -31,16 +22,15 @@ if __name__ == '__main__':
     max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, test_x_data, test_y_data,test_X_data, test_Y_data= pp._tokenizer()
     # print(tokenizer)
     han = Hierarchical_attention_networks(MAX_SENTENCES,MAX_SENTENCE_LENGTH,tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data, test_Y_data)
-    # han.load_embedding()
+    # embedding_matrix = han.load_embedding()
+    # print("embedding_matrix.shape: {}".format(embedding_matrix.shape))
     han.training()
 
     han.evaluation()
-    
     
 
     text =  "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
     han.attention_visualization(text)
     
-    # sentiment_analysis(text)
 
 

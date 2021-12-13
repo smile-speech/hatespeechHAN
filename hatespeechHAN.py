@@ -1,32 +1,14 @@
 import pandas as pd
 import numpy as np
-import random
-import argparse
-import urllib
-import csv
 import os
 import keras
 
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
-from sklearn.model_selection import train_test_split
-
 import tensorflow as tf
-from tensorflow.keras.preprocessing import text
-from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import text_to_word_sequence
-from keras.utils import to_categorical
 from nltk.tokenize import sent_tokenize
 
-from tensorflow.compat.v1.keras.layers import CuDNNGRU
-#from tensorflow.keras import backend as K
 from tensorflow.compat.v1.keras import backend as K
 from keras.engine.topology import Layer
-#from tensorflow.compat.v1.keras.layers import CuDNNGRU
 from keras.layers import Input, Embedding, Dense
 from keras.layers import Lambda, Permute, RepeatVector, Multiply
 from keras.layers import Bidirectional, TimeDistributed
@@ -38,7 +20,6 @@ from keras.callbacks import ModelCheckpoint
 import matplotlib.pyplot as plt
 from numpy import argmax
 from sklearn.metrics import classification_report
-
 from sklearn.metrics import confusion_matrix, classification_report
 
 import seaborn as sns
@@ -126,10 +107,7 @@ class Hierarchical_attention_networks():
                 
         return self.embedding_matrix
 
-
-    # print("embedding_matrix.shape: {}".format(embedding_matrix.shape))
-
-
+        
     def WeightedSum(self,attentions, representations):
         # from Shape(batch_size, len_units) to Shape(batch_size, rnn_dim * 2, len_units)
         repeated_attentions = RepeatVector(K.int_shape(representations)[-1])(attentions)
@@ -155,10 +133,6 @@ class Hierarchical_attention_networks():
             dense_dropout=0.2,
             optimizer = keras.optimizers.Adagrad(lr=0.01, epsilon=1e-6)):
 
-        # max_sentence_length = self.MAX_SENTENCE_LENGTH
-        # max_sentences = self.MAX_SENTENCES
-        # embedding_matrix = (max_nb_words + 1, embedding_dim)
-        #추가
         self.embedding_matrix = self.load_embedding('word2vec')
         max_nb_words = self.embedding_matrix.shape[0] - 1
         embedding_layer = Embedding(max_nb_words + 1, 
@@ -248,17 +222,14 @@ class Hierarchical_attention_networks():
         self.history = self.model.fit(x=[self.train_X_data],
                             y=[self.train_Y_data],
                             batch_size=64,
-                            epochs=3,
+                            epochs=10,
                             verbose=True,
                             validation_data=(self.val_X_data, self.val_Y_data),
                             callbacks=[checkpointer])
 
         return self.model, self.history
-        # print(history.history.keys())
+  
 
-
-
-# # # print(history.history.keys())
     def evaluation(self):
         # summarize history for accuracy
         plt.plot(self.history.history['accuracy'])
@@ -267,7 +238,6 @@ class Hierarchical_attention_networks():
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        # plt.show()
         plt.savefig(image_path + "/model_accuracy.png")
 
 
@@ -278,7 +248,6 @@ class Hierarchical_attention_networks():
         plt.ylabel('loss')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        # plt.show()
         plt.savefig(image_path + "/model_loss.png")
 
 
@@ -301,8 +270,6 @@ class Hierarchical_attention_networks():
 
     def doc2hierarchical(self, text):
         sentences = sent_tokenize(text)
-        # max_sentences = self.MAX_SENTENCES
-        # max_sentence_length = self.MAX_SENTENCE_LENGTH
         tokenized_sentences = self.tokenizer.texts_to_sequences(sentences)
         tokenized_sentences = pad_sequences(tokenized_sentences, maxlen=self.MAX_SENTENCE_LENGTH)
 
@@ -355,7 +322,6 @@ class Hierarchical_attention_networks():
             #cmap="Blues",cmap='YlGnBu"
             heatmap = sns.heatmap([[sent_att[0][sent_idx]]], xticklabels=False, yticklabels=False,cbar = False , annot=[[sent_att_labels[0][sent_idx]]],fmt ='', square=True, linewidths=0.1, cmap='coolwarm', center=0, vmin=0, vmax=1)
             plt.xticks(rotation=45)
-            # plt.show()
 
             fig, ax = plt.subplots(figsize=(len(words), 2))
             plt.rc('xtick', labelsize=16)
@@ -363,6 +329,5 @@ class Hierarchical_attention_networks():
             word_list = np.expand_dims(words, axis=0)
             heatmap = sns.heatmap(pred_att, xticklabels=False, yticklabels=False,cbar=False, square=True,annot=word_list ,fmt ='', annot_kws={"alpha":1,'rotation':15},cmap ="coolwarm_r", linewidths=0.2, center=0, vmin=0, vmax=1)
             plt.xticks(rotation=45)
-            # plt.show()
         
         plt.savefig(image_path + "/test.png")

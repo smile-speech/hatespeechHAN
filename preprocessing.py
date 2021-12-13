@@ -1,46 +1,15 @@
 import pandas as pd
 import numpy as np
-import random
-import argparse
-import urllib
-import csv
-import os
-import keras
-
-from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-import tensorflow as tf
-from tensorflow.keras.preprocessing import text
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
-from keras.preprocessing.text import text_to_word_sequence
 from keras.utils import to_categorical
 from nltk.tokenize import sent_tokenize
 
-from tensorflow.compat.v1.keras.layers import CuDNNGRU
-#from tensorflow.keras import backend as K
-from tensorflow.compat.v1.keras import backend as K
-from keras.engine.topology import Layer
-#from tensorflow.compat.v1.keras.layers import CuDNNGRU
-from keras.layers import Input, Embedding, Dense
-from keras.layers import Lambda, Permute, RepeatVector, Multiply
-from keras.layers import Bidirectional, TimeDistributed
+
 from keras.layers import GRU
-from keras.layers import BatchNormalization, Dropout
-from keras.models import Model, Sequential
-from keras.callbacks import ModelCheckpoint
 
-import matplotlib.pyplot as plt
-from numpy import argmax
-from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix, classification_report
-
-import seaborn as sns
 
 class preprocessing():
     def __init__(self, MAX_SENTENCES, MAX_SENTENCE_LENGTH):
@@ -105,10 +74,7 @@ class preprocessing():
     def build_dataset(self, x_data, y_data):
         max_sentences= self.MAX_SENTENCES
         max_sentence_length=self.MAX_SENTENCE_LENGTH
-
         nb_instances = len(x_data)
-        
-        
         X_data = np.zeros((nb_instances, max_sentences, max_sentence_length), dtype='int32')
         
         
