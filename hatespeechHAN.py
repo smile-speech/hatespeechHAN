@@ -65,7 +65,9 @@ class AttentionLayer(Layer):
 
 class Hierarchical_attention_networks():
     
-    def __init__(self, MAX_SENTENCES,MAX_SENTENCE_LENGTH, tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data,test_Y_data):
+    def __init__(self, epochs, batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH, tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data,test_Y_data):
+        self.epochs = epochs
+        self.batch_size = batch_size
         self.MAX_SENTENCES = MAX_SENTENCES
         self.MAX_SENTENCE_LENGTH = MAX_SENTENCE_LENGTH
         self.tokenizer = tokenizer
@@ -123,7 +125,7 @@ class Hierarchical_attention_networks():
 
     def HAN_layer(self,
             nb_classes,
-            embedding_dim=300,
+            # embedding_dim=300,
             attention_dim=100,
             rnn_dim=50,
             include_dense_batch_normalization=False,
@@ -136,7 +138,7 @@ class Hierarchical_attention_networks():
         self.embedding_matrix = self.load_embedding('word2vec')
         max_nb_words = self.embedding_matrix.shape[0] - 1
         embedding_layer = Embedding(max_nb_words + 1, 
-                                    embedding_dim,
+                                    self.embedding_dim,
                                     weights=[self.embedding_matrix],
                                     input_length=self.MAX_SENTENCE_LENGTH,
                                     trainable=False)
@@ -208,7 +210,7 @@ class Hierarchical_attention_networks():
         # self.embedding_matrix = self.load_embedding('word2vec')#추가
         self.model, attention_extractor = self.HAN_layer(
                                             nb_classes=3,
-                                            embedding_dim=300,
+                                            # embedding_dim=300,
                                             attention_dim=100,
                                             rnn_dim=50,
                                             include_dense_batch_normalization=False,
@@ -221,8 +223,8 @@ class Hierarchical_attention_networks():
 
         self.history = self.model.fit(x=[self.train_X_data],
                             y=[self.train_Y_data],
-                            batch_size=64,
-                            epochs=10,
+                            batch_size=self.batch_size,
+                            epochs=self.epochs,
                             verbose=True,
                             validation_data=(self.val_X_data, self.val_Y_data),
                             callbacks=[checkpointer])
