@@ -9,6 +9,7 @@ model/
 images/
 embedding/
 data/
+hatespeech-env/
 
 # C extensions
 *.so

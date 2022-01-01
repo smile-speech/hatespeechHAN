@@ -24,53 +24,54 @@ class preprocessing():
         df = df[['hate','comment']]
         df = df.sample(frac=1).reset_index(drop=True)
 
-        nohate_count = len(df[df['hate'] == 0])
-        sexism_count = len(df[df['hate'] == 1])
-        racism_count = len(df[df['hate'] == 2])
+        if self.dataset == 'waseem':
+            nohate_count = len(df[df['hate'] == 0])
+            sexism_count = len(df[df['hate'] == 1])
+            racism_count = len(df[df['hate'] == 2])
 
-        self.nohate = df[df.hate == 0].index
-        self.sexism = df[df.hate == 1].index
-        self.racism = df[df.hate == 2].index
+            self.nohate = df[df.hate == 0].index
+            self.sexism = df[df.hate == 1].index
+            self.racism = df[df.hate == 2].index
 
-        self.nohate = np.random.choice(self.nohate,racism_count, replace=False)
-        self.sexism = np.random.choice(self.sexism,racism_count, replace=False)
-        self.racism = np.random.choice(self.racism,racism_count, replace=False)
+            self.nohate = np.random.choice(self.nohate,racism_count, replace=False)
+            self.sexism = np.random.choice(self.sexism,racism_count, replace=False)
+            self.racism = np.random.choice(self.racism,racism_count, replace=False)
 
-        self.df = df
+            self.df = df
 
 
     def data_split(self):
+        if self.dataset == 'waseem':
+            nohate_train = self.nohate[:int(len(self.nohate)*0.9)]
+            nohate_test = self.nohate[int(len(self.nohate)*0.9):]
+            sexism_train = self.sexism[:int(len(self.sexism)*0.9)]
+            sexism_test = self.sexism[int(len(self.sexism)*0.9):]
+            racism_train = self.racism[:int(len(self.racism)*0.9)]
+            racism_test = self.racism[int(len(self.racism)*0.9):]
 
-        nohate_train = self.nohate[:1741]
-        nohate_test = self.nohate[1741:]
-        sexism_train = self.sexism[:1741]
-        sexism_test = self.sexism[1741:]
-        racism_train = self.racism[:1741]
-        racism_test = self.racism[1741:]
+            train = np.concatenate((nohate_train,sexism_train,racism_train))
+            test = np.concatenate((nohate_test,sexism_test,racism_test))
 
-        train = np.concatenate((nohate_train,sexism_train,racism_train))
-        test = np.concatenate((nohate_test,sexism_test,racism_test))
+            train_df = self.df.loc[train]
+            test_df = self.df.loc[test]
 
-        train_df = self.df.loc[train]
-        test_df = self.df.loc[test]
+            train_df = train_df.sample(frac=1).reset_index(drop=True)
+            test_df = test_df.sample(frac=1).reset_index(drop=True)
 
-        train_df = train_df.sample(frac=1).reset_index(drop=True)
-        test_df = test_df.sample(frac=1).reset_index(drop=True)
+            self.train_x_data =[]
+            self.train_y_data =[]
+            self.test_x_data =[]
+            self.test_y_data =[]
 
-        self.train_x_data =[]
-        self.train_y_data =[]
-        self.test_x_data =[]
-        self.test_y_data =[]
-
-        length=len(train_df)
-        for i in range(length):
-            self.train_x_data.append(train_df.loc[i].comment)
-            self.train_y_data.append(train_df.loc[i].hate)
-            
-        length=len(test_df)
-        for i in range(length):
-            self.test_x_data.append(test_df.loc[i].comment)
-            self.test_y_data.append(test_df.loc[i].hate)
+            length=len(train_df)
+            for i in range(length):
+                self.train_x_data.append(train_df.loc[i].comment)
+                self.train_y_data.append(train_df.loc[i].hate)
+                
+            length=len(test_df)
+            for i in range(length):
+                self.test_x_data.append(test_df.loc[i].comment)
+                self.test_y_data.append(test_df.loc[i].hate)
 
 
     def build_dataset(self, x_data, y_data):
