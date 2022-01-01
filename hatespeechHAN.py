@@ -27,7 +27,7 @@ tf.compat.v1.disable_eager_execution()
 experimental_run_tf_function=False
 
 
-image_path = '/root/corona/hatespeechHAN/images/'
+image_path = './images/'
 
 class AttentionLayer(Layer):
     def __init__(self, attention_dim, **kwargs):
@@ -86,7 +86,7 @@ class Hierarchical_attention_networks():
 
     def load_word2vec(self):
 
-        embedding_dir = '/root/corona/hatespeech/embedding'
+        embedding_dir = './embedding'
         from gensim.models import KeyedVectors
         embedding_path = os.path.join(embedding_dir, 'GoogleNews-vectors-negative300.bin')
         embeddings_index = KeyedVectors.load_word2vec_format(embedding_path, binary=True)
@@ -196,7 +196,7 @@ class Hierarchical_attention_networks():
 
     def training(self):
         
-        save_folder = os.path.join("/root/corona/hatespeechHAN/models")
+        save_folder = os.path.join("./models")
         if not os.path.isdir(save_folder):
             os.mkdir(save_folder)
         self.model_path = os.path.join(save_folder, "modell.h5")
