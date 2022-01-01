@@ -240,7 +240,7 @@ class Hierarchical_attention_networks():
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig(image_path + "/model_accuracy.png")
+        plt.savefig(image_path + "model_accuracy.png")
 
 
         # # summarize history for loss
@@ -250,7 +250,7 @@ class Hierarchical_attention_networks():
         plt.ylabel('loss')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.savefig(image_path + "/model_loss.png")
+        plt.savefig(image_path + "model_loss.png")
 
 
         score = self.model.evaluate(self.test_X_data, self.test_Y_data, verbose=0, batch_size=64)
@@ -332,4 +332,4 @@ class Hierarchical_attention_networks():
             heatmap = sns.heatmap(pred_att, xticklabels=False, yticklabels=False,cbar=False, square=True,annot=word_list ,fmt ='', annot_kws={"alpha":1,'rotation':15},cmap ="coolwarm_r", linewidths=0.2, center=0, vmin=0, vmax=1)
             plt.xticks(rotation=45)
         
-        plt.savefig(image_path + "/test.png")
+        plt.savefig(image_path + "test.png")
