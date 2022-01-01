@@ -65,7 +65,21 @@ class AttentionLayer(Layer):
 
 class Hierarchical_attention_networks():
     
-    def __init__(self, epochs, batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH, tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data,test_Y_data):
+    def __init__(self,op, lr, epochs, batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH, tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data,test_Y_data):
+        self.lr = lr
+
+        #optimizer 
+        if op == 'Adagrad':
+            self.optimizer = keras.optimizers.Adagrad(lr=self.lr, epsilon=1e-6)
+        elif op =='Adadelta':
+            self.optimizer = keras.optimizers.Adadelta(lr=self.lr, epsilon=1e-6)
+        elif op == 'Adam':
+            self.optimizer = keras.optimizers.Adam(lr=self.lr)
+        elif op == 'RMSprop':
+            self.optimizer = keras.optimizers.Adadelta(lr=self.lr,rho=0.9, epsilon=1e-6)
+        else: #default
+            self.optimizer = keras.optimizers.Adagrad(lr=self.lr, epsilon=1e-6)
+
         self.epochs = epochs
         self.batch_size = batch_size
         self.MAX_SENTENCES = MAX_SENTENCES
@@ -125,15 +139,13 @@ class Hierarchical_attention_networks():
 
     def HAN_layer(self,
             nb_classes,
-            # embedding_dim=300,
             attention_dim=100,
             rnn_dim=50,
             include_dense_batch_normalization=False,
             include_dense_dropout=True,
             nb_dense=1,
             dense_dim=300,
-            dense_dropout=0.2,
-            optimizer = keras.optimizers.Adagrad(lr=0.01, epsilon=1e-6)):
+            dense_dropout=0.2):
 
         self.embedding_matrix = self.load_embedding('word2vec')
         max_nb_words = self.embedding_matrix.shape[0] - 1
@@ -188,7 +200,7 @@ class Hierarchical_attention_networks():
                                         outputs=[word_attentions, sentence_attention])
         
         self.model.compile(loss=['categorical_crossentropy'],
-                optimizer=optimizer,
+                optimizer = self.optimizer,
                 metrics=['accuracy'])
         
         return self.model, self.attention_extractor
@@ -210,15 +222,13 @@ class Hierarchical_attention_networks():
         # self.embedding_matrix = self.load_embedding('word2vec')#추가
         self.model, attention_extractor = self.HAN_layer(
                                             nb_classes=3,
-                                            # embedding_dim=300,
                                             attention_dim=100,
                                             rnn_dim=50,
                                             include_dense_batch_normalization=False,
                                             include_dense_dropout=True,
                                             nb_dense=1,
                                             dense_dim=300,
-                                            dense_dropout=0.2,
-                                            optimizer = keras.optimizers.Adagrad(lr=0.01, epsilon=1e-6))
+                                            dense_dropout=0.2)
 
 
         self.history = self.model.fit(x=[self.train_X_data],

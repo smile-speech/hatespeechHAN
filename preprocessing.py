@@ -20,7 +20,7 @@ class preprocessing():
   
   
     def data_read(self):
-        df = pd.read_csv('./data/'+self.dataset + '/data_'+ +self.dataset+'_'+self.number_of_class+'.csv',encoding = "ISO-8859-1")
+        df = pd.read_csv('./data/'+self.dataset + '/data_'+ self.dataset+'_'+str(self.number_of_class)+'.csv',encoding = "ISO-8859-1")
         df = df[['hate','comment']]
         df = df.sample(frac=1).reset_index(drop=True)
 

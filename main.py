@@ -12,6 +12,8 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, help='batch-size',default=64, required=False)
     parser.add_argument('-d',type=str, help="dataset folder name",default="waseem", required=False)
     parser.add_argument('-cl',type=int, help="number of class",default=3, required=False)
+    parser.add_argument('-lr',type=int, help="learning rate",default=0.01, required=False)
+    parser.add_argument('-op',type=int, help="optimizer",default=0.01, required=False)
     
     args = parser.parse_args()
 
@@ -20,6 +22,10 @@ if __name__ == '__main__':
     embedding_dim = args.em
     epochs = args.epochs
     batch_size = args.batch_size
+    lr = args.lr
+    op = args.op
+
+    #data name
     dataset = args.d
     number_of_class = args.cl
 
@@ -27,7 +33,7 @@ if __name__ == '__main__':
     pp.data_read()
     pp.data_split()
     max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, test_x_data, test_y_data,test_X_data, test_Y_data= pp._tokenizer()
-    han = Hierarchical_attention_networks(epochs,batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH,tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data, test_Y_data)
+    han = Hierarchical_attention_networks(lr,op,epochs,batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH,tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data, test_Y_data)
     han.training()
     han.evaluation()
     
