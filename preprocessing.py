@@ -18,7 +18,7 @@ class preprocessing():
   
   
     def data_read(self):
-        df = pd.read_csv('./data/data_waseem_3.csv',encoding = "ISO-8859-1")
+        df = pd.read_csv('./data/waseem/data_waseem_3.csv',encoding = "ISO-8859-1")
         df = df[['hate','comment']]
         df = df.sample(frac=1).reset_index(drop=True)
 
