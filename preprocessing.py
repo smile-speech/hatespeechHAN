@@ -12,13 +12,15 @@ from keras.layers import GRU
 
 
 class preprocessing():
-    def __init__(self, MAX_SENTENCES, MAX_SENTENCE_LENGTH):
+    def __init__(self, MAX_SENTENCES, MAX_SENTENCE_LENGTH,dataset,number_of_class):
         self.MAX_SENTENCES = MAX_SENTENCES
         self.MAX_SENTENCE_LENGTH = MAX_SENTENCE_LENGTH
+        self.dataset = dataset
+        self.number_of_class = number_of_class
   
   
     def data_read(self):
-        df = pd.read_csv('./data/waseem/data_waseem_3.csv',encoding = "ISO-8859-1")
+        df = pd.read_csv('./data/'+self.dataset + '/data_'+ +self.dataset+'_'+self.number_of_class+'.csv',encoding = "ISO-8859-1")
         df = df[['hate','comment']]
         df = df.sample(frac=1).reset_index(drop=True)
 

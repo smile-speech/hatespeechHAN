@@ -10,6 +10,8 @@ if __name__ == '__main__':
     parser.add_argument('--em', type=int, help='embedding_dim',default=300, required=False)
     parser.add_argument('--epochs', type=int, help='epochs',default=100, required=False)
     parser.add_argument('--batch_size', type=int, help='batch-size',default=64, required=False)
+    parser.add_argument('-d',type=str, help="dataset folder name",default="waseem", required=False)
+    parser.add_argument('-cl',type=int, help="number of class",default=3, required=False)
     
     args = parser.parse_args()
 
@@ -18,8 +20,10 @@ if __name__ == '__main__':
     embedding_dim = args.em
     epochs = args.epochs
     batch_size = args.batch_size
+    dataset = args.d
+    number_of_class = args.cl
 
-    pp = preprocessing(MAX_SENTENCES,MAX_SENTENCE_LENGTH)
+    pp = preprocessing(MAX_SENTENCES,MAX_SENTENCE_LENGTH,dataset,number_of_class)
     pp.data_read()
     pp.data_split()
     max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, test_x_data, test_y_data,test_X_data, test_Y_data= pp._tokenizer()
