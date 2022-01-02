@@ -26,5 +26,5 @@ parser.add_argument('--batch_size', type=int, help='batch-size',default=64, requ
 parser.add_argument('--d',type=str, help="dataset folder name",default="waseem", required=False)
 parser.add_argument('--cl',type=int, help="number of class",default=3, required=False)
 parser.add_argument('--lr',type=int, help="learning rate",default=0.01, required=False)
-parser.add_argument('--op',type=int, help="optimizer",default=0.01, required=False)
+parser.add_argument('--op',type=str, help="optimizer",default="Adam", required=False)
 ```

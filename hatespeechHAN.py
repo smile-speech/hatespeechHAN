@@ -77,8 +77,6 @@ class Hierarchical_attention_networks():
             self.optimizer = keras.optimizers.Adam(lr=self.lr)
         elif op == 'RMSprop':
             self.optimizer = keras.optimizers.Adadelta(lr=self.lr,rho=0.9, epsilon=1e-6)
-        else: #default
-            self.optimizer = keras.optimizers.Adagrad(lr=self.lr, epsilon=1e-6)
 
         self.epochs = epochs
         self.batch_size = batch_size
