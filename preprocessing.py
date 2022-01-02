@@ -18,46 +18,43 @@ class preprocessing():
         self.dataset = dataset
         self.number_of_class = number_of_class
   
-  
-    def data_read(self):
-        df = pd.read_csv('./data/'+self.dataset + '/data_'+ self.dataset+'_'+str(self.number_of_class)+'.csv',encoding = "ISO-8859-1")
-        df = df[['hate','comment']]
-        df = df.sample(frac=1).reset_index(drop=True)
 
-        if self.dataset == 'waseem':
-            nohate_count = len(df[df['hate'] == 0])
-            sexism_count = len(df[df['hate'] == 1])
-            racism_count = len(df[df['hate'] == 2])
+            
+    def data_ready(self):        
+        # 3 class : waseem, hatebase
+        # waseem: nohate(0), sexism(1), racism(2)
+        # hatebase: hate(0). offensive(1), nohate(2)
+        if self.number_of_class == 3:
+            df = pd.read_csv('./data/'+self.dataset + '/data_'+ self.dataset+'_'+str(self.number_of_class)+'.csv',encoding = "ISO-8859-1")
+            self.df = df[['hate','comment']].sample(frac=1).reset_index(drop=True)
+            self.class1 = self.df[self.df.hate == 0].index
+            self.class2 = self.df[self.df.hate == 1].index
+            self.class3 = self.df[self.df.hate == 2].index
 
-            self.nohate = df[df.hate == 0].index
-            self.sexism = df[df.hate == 1].index
-            self.racism = df[df.hate == 2].index
+            #random sampling
+            self.shortest = int(min(len(self.class1), len(self.class2),len(self.class3)))
+            self.class1 = np.random.choice(self.class1,self.shortest, replace=False)
+            self.class2 = np.random.choice(self.class2,self.shortest, replace=False)
+            self.class3 = np.random.choice(self.class3,self.shortest, replace=False)
 
-            self.nohate = np.random.choice(self.nohate,racism_count, replace=False)
-            self.sexism = np.random.choice(self.sexism,racism_count, replace=False)
-            self.racism = np.random.choice(self.racism,racism_count, replace=False)
+            self.train_size = int(len(self.class1)*0.9)
+            
+            #split into train,test each class
+            class1_train = self.class1[:self.train_size]
+            class1_test = self.class1[self.train_size:]
+            class2_train = self.class2[:self.train_size]
+            class2_test = self.class2[self.train_size:]
+            class3_train = self.class3[:self.train_size]
+            class3_test = self.class3[self.train_size:]
+            #combine index
+            train = np.concatenate((class1_train,class2_train,class3_train))
+            test = np.concatenate((class1_test,class2_test,class3_test))
+            
+            #index to data & reset index
+            train_df = self.df.loc[train].sample(frac=1).reset_index(drop=True)
+            test_df = self.df.loc[test].sample(frac=1).reset_index(drop=True)
 
-            self.df = df
-
-
-    def data_split(self):
-        if self.dataset == 'waseem':
-            nohate_train = self.nohate[:int(len(self.nohate)*0.9)]
-            nohate_test = self.nohate[int(len(self.nohate)*0.9):]
-            sexism_train = self.sexism[:int(len(self.sexism)*0.9)]
-            sexism_test = self.sexism[int(len(self.sexism)*0.9):]
-            racism_train = self.racism[:int(len(self.racism)*0.9)]
-            racism_test = self.racism[int(len(self.racism)*0.9):]
-
-            train = np.concatenate((nohate_train,sexism_train,racism_train))
-            test = np.concatenate((nohate_test,sexism_test,racism_test))
-
-            train_df = self.df.loc[train]
-            test_df = self.df.loc[test]
-
-            train_df = train_df.sample(frac=1).reset_index(drop=True)
-            test_df = test_df.sample(frac=1).reset_index(drop=True)
-
+            #text & label split
             self.train_x_data =[]
             self.train_y_data =[]
             self.test_x_data =[]
@@ -72,6 +69,52 @@ class preprocessing():
             for i in range(length):
                 self.test_x_data.append(test_df.loc[i].comment)
                 self.test_y_data.append(test_df.loc[i].hate)
+
+        # 2 class : stormfront, wikipedia, kaggle
+        # nohate(0), hate(1)
+        if self.number_of_class == 2:
+            df = pd.read_csv('./data/'+self.dataset + '/data_'+ self.dataset+'.csv',encoding = "ISO-8859-1")
+            self.df = df[['hate','comment']].sample(frac=1).reset_index(drop=True)
+            self.class1 = self.df[self.df.hate == 0].index
+            self.class2 = self.df[self.df.hate == 1].index
+
+            #random sampling
+            self.shortest = int(min(len(self.class1), len(self.class2)))
+            self.class1 = np.random.choice(self.class1,self.shortest, replace=False)
+            self.class2 = np.random.choice(self.class2,self.shortest, replace=False)
+
+            self.train_size = int(len(self.class1)*0.9)
+            
+            #split index into train,test
+            class1_train = self.class1[:self.train_size]
+            class1_test = self.class1[self.train_size:]
+            class2_train = self.class2[:self.train_size]
+            class2_test = self.class2[self.train_size:]
+
+            #combine index
+            train = np.concatenate((class1_train,class2_train))
+            test = np.concatenate((class1_test,class2_test))
+            
+            #index to data & reset index
+            train_df = self.df.loc[train].sample(frac=1).reset_index(drop=True)
+            test_df = self.df.loc[test].sample(frac=1).reset_index(drop=True)
+
+            #text & label split
+            self.train_x_data =[]
+            self.train_y_data =[]
+            self.test_x_data =[]
+            self.test_y_data =[]
+
+            length=len(train_df)
+            for i in range(length):
+                self.train_x_data.append(train_df.loc[i].comment)
+                self.train_y_data.append(train_df.loc[i].hate)
+                
+            length=len(test_df)
+            for i in range(length):
+                self.test_x_data.append(test_df.loc[i].comment)
+                self.test_y_data.append(test_df.loc[i].hate)
+
 
 
     def build_dataset(self, x_data, y_data):

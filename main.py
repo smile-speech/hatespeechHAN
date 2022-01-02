@@ -30,8 +30,7 @@ if __name__ == '__main__':
     number_of_class = args.cl
 
     pp = preprocessing(MAX_SENTENCES,MAX_SENTENCE_LENGTH,dataset,number_of_class)
-    pp.data_read()
-    pp.data_split()
+    pp.data_ready()
     max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, test_x_data, test_y_data,test_X_data, test_Y_data= pp._tokenizer()
     han = Hierarchical_attention_networks(lr,op,epochs,batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH,tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data, test_Y_data)
     han.training()
