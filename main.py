@@ -1,6 +1,7 @@
 import argparse
 from preprocessing import preprocessing
 from hatespeechHAN import Hierarchical_attention_networks
+from sklearn.model_selection import KFold, StratifiedKFold
 
 if __name__ == '__main__':
 
@@ -29,16 +30,32 @@ if __name__ == '__main__':
     dataset = args.d
     number_of_class = args.cl
 
+
     pp = preprocessing(MAX_SENTENCES,MAX_SENTENCE_LENGTH,dataset,number_of_class)
     pp.data_ready()
-    max_nb_words, tokenizer, train_X_data, val_X_data, train_Y_data, val_Y_data, test_x_data, test_y_data,test_X_data, test_Y_data= pp._tokenizer()
-    han = Hierarchical_attention_networks(lr,op,epochs,batch_size,MAX_SENTENCES,MAX_SENTENCE_LENGTH,tokenizer, embedding_dim, max_nb_words,train_X_data, val_X_data, train_Y_data, val_Y_data,test_x_data,test_y_data,test_X_data, test_Y_data)
-    han.training()
-    han.evaluation()
-    
+    max_nb_words, tokenizer, X_data, Y_data, x_data, y_data= pp._tokenizer()
+    print ("-----preprocessing completed-----")
 
-    text = "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
-    han.attention_visualization(text)
+    kf = KFold(n_splits=10)                        
+    skf = StratifiedKFold(n_splits = 10, random_state = 7, shuffle = True)
+    fold_var =1 
+    ### Cross Validation (CV)
+    for train_index, test_index in skf.split(X_data,y_data):
+        han = Hierarchical_attention_networks(
+            lr,
+            op,
+            MAX_SENTENCES,MAX_SENTENCE_LENGTH,
+            embedding_dim, 
+            max_nb_words, 
+            tokenizer,
+            number_of_class)
+        han.training(fold_var,dataset,epochs,batch_size,train_index,test_index,X_data,Y_data,x_data,y_data)
+        fold_var +=1
+    
+    han.evaluation()
+
+    # text = "== Dear Yandman == Fuck you, do not censor me, cuntface. I think my point about French people being smelly frogs is very valid, it is not a matter of opinion. You go to hell you dirty bitch. Hugs and kisses Your secret admirer "
+    # han.attention_visualization(text)
     
 
 

@@ -4,12 +4,13 @@ __pycache__/
 *$py.class
 test
 
-#API KEY
-model/
+#add 
+models/
 images/
 embedding/
 data/
 hatespeech-env/
+run.sh
 
 # C extensions
 *.so
