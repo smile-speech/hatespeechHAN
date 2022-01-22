@@ -1,13 +1,14 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
 
 from keras.preprocessing.text import Tokenizer
 from keras.preprocessing.sequence import pad_sequences
 from keras.utils import to_categorical
+from keras.layers import GRU
+
 from nltk.tokenize import sent_tokenize
 
-from keras.layers import GRU
+
 
 class preprocessing():
     def __init__(self, MAX_SENTENCES, MAX_SENTENCE_LENGTH,dataset,number_of_class):

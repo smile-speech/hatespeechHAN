@@ -1,15 +1,19 @@
 import pandas as pd
-import numpy as np
-from numpy import mean
-from numpy import std
 import os
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import tensorflow as tf
 import keras
 
-import tensorflow as tf
-from keras.preprocessing.sequence import pad_sequences
+from numpy import mean
+from numpy import std
+from numpy import argmax
+from pathlib import Path
 from nltk.tokenize import sent_tokenize
 
 from tensorflow.compat.v1.keras import backend as K
+from keras.preprocessing.sequence import pad_sequences
 from keras.engine.topology import Layer
 from keras.layers import Input, Embedding, Dense
 from keras.layers import Lambda, Permute, RepeatVector, Multiply
@@ -20,15 +24,10 @@ from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from keras.utils import to_categorical
 
-import matplotlib.pyplot as plt
-from numpy import argmax
 from sklearn.metrics import classification_report
-from sklearn.metrics import confusion_matrix, classification_report
-from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.model_selection import train_test_split
 
-import seaborn as sns
-from pathlib import Path
+
 tf.compat.v1.disable_eager_execution()
 experimental_run_tf_function=False
 
